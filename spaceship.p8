@@ -12,10 +12,16 @@ local player = {
 	speed = 0
 }
 
+-- aux
+local shooting = false
+
+-- bullets
+local bullets = {}
+
 -- background
 local stars = {}
 local star_count = 64
-local star_speed = 4
+local star_speed = 3
 
 -------------------
 -- game lifetime
@@ -23,7 +29,7 @@ local star_speed = 4
 function _init()
 	-- init player
 	player.x = 64
-	player.y = 120
+	player.y = 118
 	player.speed = 2
 	
 	-- init background
@@ -36,15 +42,11 @@ function _update()
 	-- player
 	update_player()
 	
+	-- bullets
+	update_bullets()
+	
 	-- background
-	for star in all(stars) do
-		star.y += star_speed
-		
-		if star.y > 128 then
-			star.y = 0
-			star.x = rnd(128)
-		end
-	end
+	update_background()
 end
 
 function _draw()
@@ -55,41 +57,87 @@ function _draw()
 		pset(star.x, star.y,13)
 	end
 	
+	-- bullets
+	for bullet in all(bullets) do
+		spr(2, bullet.x, bullet.y)
+	end
+	
 	-- player
 	spr(1, player.x, player.y)
+	
+	-- border
+	rect(0,0,127,127,8)
+end
+
+-------------------
+-- update methods
+-------------------
+function update_player()
+	if btn(0) and player.x > 2 then
+		player.x -= player.speed
+	end
+	
+	if btn(1) and player.x < 118 then
+		player.x += player.speed
+	end
+	
+	if btn(2) and player.y > 2 then
+		player.y -= player.speed
+	end
+	
+	if btn(3) and player.y < 118 then
+		player.y += player.speed
+	end		
+	
+	if btn(4) then
+		if not shooting then
+			sfx(0)
+			create_bullet()
+			shooting = true
+		end
+	else
+		shooting = false
+	end
+end
+
+function update_background()
+	for star in all(stars) do
+		star.y += star_speed
+		
+		if star.y > 128 then
+			star.y = 0
+			star.x = rnd(128)
+		end
+	end
+end
+
+function update_bullets()
+	local to_remove = {}
+	
+	for bullet in all(bullets) do
+		bullet.y -= 2
+		
+		if bullet.y < 0 then
+			del(bullets, bullet)
+		end
+	end
 end
 
 -------------------
 -- helper methods
 -------------------
-function update_player()
-	if btn(0) and player.x > 0 then
-		player.x -= player.speed
-	end
-	
-	if btn(1) and player.x < 120 then
-		player.x += player.speed
-	end
-	
-	if btn(2) and player.y > 0 then
-		player.y -= player.speed
-	end
-	
-	if btn(3) and player.y < 120 then
-		player.y += player.speed
-	end		
-end
-
-function update_background()
-
+function create_bullet()
+	add(bullets, {x = player.x, y = player.y})
 end
 
 __gfx__
-00000000000dd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00700700007777000000000000099000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000d007700d00099000009aa900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000770004007700400099000009aa900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000770007077770700099000009aa900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00700700777cc7770000000000900900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000777cc7770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000007d77d700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000074774700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000100001d45014450114500d4500c4500c4500c4500c4500d4500d4500f450104502445036450214501b450194501545012450114500e4500d4500b4500a4500945009450084500845008450094500a4500b450
