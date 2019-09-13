@@ -18,6 +18,11 @@ local shooting = false
 -- bullets
 local bullets = {}
 
+-- game state
+local score = 0
+local high = 0
+local lives = 3
+
 -- background
 local stars = {}
 local star_count = 64
@@ -65,8 +70,16 @@ function _draw()
 	-- player
 	spr(1, player.x, player.y)
 	
+	-- ui
+	rectfill(0,0,127,15,1)
+	print('score: '..score, 3, 3, 6)
+	print('high : '..high, 3, 10, 6)
+	
+	spr(1, 100, 4)
+	print(lives,114,6)
+	
 	-- border
-	rect(0,0,127,127,8)
+	rect(0,16,127,127,1)
 end
 
 -------------------
@@ -81,7 +94,7 @@ function update_player()
 		player.x += player.speed
 	end
 	
-	if btn(2) and player.y > 2 then
+	if btn(2) and player.y > 18 then
 		player.y -= player.speed
 	end
 	
