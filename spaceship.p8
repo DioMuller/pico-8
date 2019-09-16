@@ -112,7 +112,7 @@ function init_game()
 	
 	for i=1,count_row do
 		for j=1,count_col do
-			create_enemy(i*10,20+j*12,15+j,j*100) 
+			create_enemy(i*10,20+j*12,j,j*100) 
 		end
 	end
 end
@@ -207,7 +207,7 @@ end
 
 function draw_enemies()
 	for enemy in all(enemies) do
-		spr(enemy.type,enemy.x,enemy.y)
+		spr(enemy.sprite,enemy.x,enemy.y)
 	end
 end
 
@@ -253,8 +253,8 @@ function create_bullet()
 	add(bullets, {x = player.x, y = player.y})
 end
 
-function create_enemy(pos_x,pos_y,enemy_type,enemy_score)
-	add(enemies, {x=pos_x, y=pos_y,type=enemy_type,score=enemy_score})
+function create_enemy(x,y,behavior,score)
+	add(enemies, {x=x, y=y,behavior=behavior,sprite=behavior+15,score=score})
 end
 
 -------------------
