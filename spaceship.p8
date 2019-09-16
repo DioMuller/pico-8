@@ -2,6 +2,29 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 -------------------
+-- sfx
+-------------------
+-- 0 = shooting
+-- 1 = destroy enemy
+-- 2 = start game
+
+-------------------
+-- music
+-------------------
+-- 0 = title
+-- 5 = level
+-- 8 = game over
+-- 9 = victory
+
+-------------------
+-- game state
+-------------------
+-- 0 = title
+-- 1 = game
+-- 2 = game over
+-- 3 = victory
+
+-------------------
 -- data
 -------------------
 
@@ -150,6 +173,7 @@ end
 
 function update_enemies()
 	for enemy in all(enemies) do
+		-- update bullet collision
 		for bullet in all(bullets) do
 			if intersect(enemy.x,enemy.y,8,8,bullet.x,bullet.y,8,8) then
 				score += enemy.score
@@ -159,6 +183,22 @@ function update_enemies()
 				sfx(1)
 			end
 		end
+		
+		-- update enemy behavior
+		if enemy.initialized then
+			if enemy.behavior == 1 then
+				
+			elseif enemy.behavior == 2 then
+				
+			elseif enemy.behavior == 3 then
+				
+			end
+		else
+			enemy.x += enemy.speed_x
+			enemy.y += enemy.speed_y
+			enemy.initialized = (enemy.y >= enemy.target_y)
+		end
+		
 	end
 end
 
@@ -229,8 +269,8 @@ function draw_ui()
 	print('score: '..score, 3, 3, 6)
 	print('high : '..high, 3, 10, 6)
 	
-	print('lives: '..lives, 94, 3, 6)
-	print('kills: '..kills, 94,10, 6)
+	print('lives: '..lives, 86, 3, 6)
+	print('kills: '..kills, 86,10, 6)
 	
 	-- border
 	rect(0,16,127,127,1)
@@ -238,11 +278,10 @@ end
 
 function draw_title()
 	map(0,0)
-	
 	if not blinking then 
 		print('press X or O to start',20,80,8)
 	end
-	
+
 	print('2019 diogo muller',28,120,6)
 end
 
@@ -254,7 +293,12 @@ function create_bullet()
 end
 
 function create_enemy(x,y,behavior,score)
-	add(enemies, {x=x, y=y,behavior=behavior,sprite=behavior+15,score=score})
+	local diff = 1	
+	
+	if(x>48 and x<78) diff = 0
+	if(x>=78) diff = -1
+	
+	add(enemies, {target_x=x, target_y=y, x=x-(15*diff), y=y-30, speed_x=(1*diff), speed_y=2, initialized=false,behavior=behavior,sprite=behavior+15,score=score})
 end
 
 -------------------
@@ -335,6 +379,8 @@ __sfx__
 0110000011033110331303313033110331103313033130330c0330c03310033100330c0330c03310033100330e0330e03311033110330e0330e03311033110331303313033170331703313033130331703317033
 011000000e0500e050100500e0500e050100500e05010050110501305015050170500e0500e050100500e0500e050100500e050100501105013050150500e0500e050100500e0500e050100500e0501005011050
 0110000010050100501105010050100501105010050110501305015050170500e0500e050100500e0500e050100500e050100501105013050150500e0500e050100500e0500e050100500e050100501105013050
+012000000505005050040500405005050050500205002050040500405002050020500405004050050500505002050020500205002050000000000000000000000000000000000000000000000000000000000000
+01100000180501d0501d050180501f0501f0501a05023050230502405026050280502805028050290502905029050290500000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 01 03044744
 01 05044744
@@ -344,4 +390,6 @@ __music__
 01 090a4344
 00 0b0a4344
 02 0c0a4344
+00 0d424344
+00 0e424344
 
