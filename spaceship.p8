@@ -134,8 +134,10 @@ function init_game()
 	enemies = {}
 	
 	for i=1,count_row do
+		previous = nil
 		for j=1,count_col do
-			create_enemy(i*10,20+j*12,j,j*100) 
+			previous = create_enemy(i*10,20+j*12,j,j*100,previous) 
+			previous.active = (j == count_col)
 		end
 	end
 end
@@ -173,11 +175,19 @@ end
 
 function update_enemies()
 	for enemy in all(enemies) do
+	
+		-- out of screen
+		if enemy.y > 128 then
+			if( enemy.previous != nil ) enemy.previous.active = true
+			del(enemies, enemy)
+		end
+		
 		-- update bullet collision
 		for bullet in all(bullets) do
 			if intersect(enemy.x,enemy.y,8,8,bullet.x,bullet.y,8,8) then
 				score += enemy.score
 				kills += 1
+				if( enemy.previous != nil ) enemy.previous.active = true
 				del(enemies,enemy)
 				del(bullets,bullet)
 				sfx(1)
@@ -185,18 +195,22 @@ function update_enemies()
 		end
 		
 		-- update enemy behavior
-		if enemy.initialized then
+		if not enemy.initialized then
+			enemy.x += enemy.speed_x
+			enemy.y += enemy.speed_y
+			enemy.initialized = (enemy.y >= enemy.target_y)
+		elseif enemy.active then			
 			if enemy.behavior == 1 then
 				
 			elseif enemy.behavior == 2 then
 				
 			elseif enemy.behavior == 3 then
-				
+				if enemy.delay < 0 then
+					enemy.y += enemy.speed_y
+				else
+					enemy.delay -= 1
+				end
 			end
-		else
-			enemy.x += enemy.speed_x
-			enemy.y += enemy.speed_y
-			enemy.initialized = (enemy.y >= enemy.target_y)
 		end
 		
 	end
@@ -224,7 +238,7 @@ function update_bullets()
 end
 
 function update_title()
-	if btn(4) or btn(5) then
+	if btn(4) and btn(5) then
 		init_game()
 		sfx(2)
 		state = 1
@@ -279,7 +293,7 @@ end
 function draw_title()
 	map(0,0)
 	if not blinking then 
-		print('press X or O to start',20,80,8)
+		print('press X + O to start',24,80,8)
 	end
 
 	print('2019 diogo muller',28,120,6)
@@ -292,13 +306,16 @@ function create_bullet()
 	add(bullets, {x = player.x, y = player.y})
 end
 
-function create_enemy(x,y,behavior,score)
+function create_enemy(x,y,behavior,score,previous)
 	local diff = 1	
 	
 	if(x>48 and x<78) diff = 0
 	if(x>=78) diff = -1
 	
-	add(enemies, {target_x=x, target_y=y, x=x-(15*diff), y=y-30, speed_x=(1*diff), speed_y=2, initialized=false,behavior=behavior,sprite=behavior+15,score=score})
+	local enemy = {target_x=x, target_y=y, x=x-(15*diff), y=y-30, speed_x=(1*diff), speed_y=2, initialized=false,behavior=behavior,sprite=behavior+15,score=score,previous=previous,delay=rnd(64)+32}
+	add(enemies,enemy)
+	
+	return enemy
 end
 
 -------------------
