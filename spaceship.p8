@@ -19,17 +19,18 @@ __lua__
 -------------------
 -- game state
 -------------------
--- 0 = title
--- 1 = game
--- 2 = game over
--- 3 = victory
+--  0 = title
+--  1 = game
+--  2 = game over
+--  3 = victory
+-- -1 = error
 
 -------------------
 -- data
 -------------------
 
 -- game state
-local state = 0
+local game_state = 0
 
 -- player
 local player = {
@@ -55,7 +56,7 @@ local count_row = 11
 
 -- game state
 local score = 0
-local high = 0
+local high = 10000
 local lives = 3
 local kills = 0
 
@@ -72,35 +73,51 @@ function _init()
 end
 
 function _update()
-	if state == 0 then -- title
+	if game_state == 0 then -- title
 		update_title()
 		update_background()
-	elseif state == 1 then -- game
+	elseif game_state == 1 then -- game
 		update_player()
 		update_enemies()
 		update_bullets()
 		update_background()
 		
 		if #enemies == 0 then
-			state = 0
-			init_title()
+			change_state(3) -- victory
 		end
+	elseif game_state == 2 then -- game over
+		update_background()
+	elseif game_state == 3 then -- victory
+		update_background()
 	end
 end
 
 function _draw()
 	cls()
-	
-	if state == 0 then -- title
+
+	if game_state == 0 then -- title
 		draw_background()
 		draw_title()
-	elseif state == 1 then -- game
+	elseif game_state == 1 then -- game
 		draw_background()
 		draw_bullets()
 		draw_enemies()
 		draw_player()
 		
 		draw_ui()
+	elseif game_state == 2 then -- game over
+		print('game over', 40, 60, 8)
+	elseif game_state == 3 then -- victory
+		print('you win!', 48, 20, 10)
+		
+		print('score:', 32, 70, 15)
+		print(score, 72, 70, 7)
+		print('high : ',  32, 80, 15)
+		print(high, 72, 80, 7)
+		print('kills: ', 32, 90, 15)
+		print(kills, 72, 90, 7)
+	else -- error
+		print('error: invalid game state!', 10, 10, 8)
 	end
 end
 
@@ -142,10 +159,22 @@ function init_game()
 	end
 end
 
+function init_gameover()
+	music(8)
+end
+
+function init_victory()
+	music(9)
+end
+
 -------------------
 -- update methods
 -------------------
 function update_player()
+	if lives < 0 then
+		change_state(2) -- game over
+	end
+
 	if btn(0) and player.x > 2 then
 		player.x -= player.speed
 	end
@@ -185,7 +214,7 @@ function update_enemies()
 		-- update bullet collision
 		for bullet in all(bullets) do
 			if intersect(enemy.x,enemy.y,8,8,bullet.x,bullet.y,8,8) then
-				score += enemy.score
+				add_score(enemy.score)
 				kills += 1
 				if( enemy.previous != nil ) enemy.previous.active = true
 				del(enemies,enemy)
@@ -239,9 +268,8 @@ end
 
 function update_title()
 	if btn(4) and btn(5) then
-		init_game()
 		sfx(2)
-		state = 1
+		change_state(1)
 	end
 	
 	blink_count += 1
@@ -323,6 +351,30 @@ end
 -------------------
 function intersect(x1,y1,w1,h1,x2,y2,w2,h2)
 	return x1<x2+w2 and x2<x1+w1 and y1<y2+h2 and y2<y1+h1
+end
+
+-------------------
+-- state methods
+-------------------
+function change_state(new_state)
+	game_state = new_state
+
+	if game_state == 0 then
+		init_title()
+	elseif game_state == 1 then
+		init_game()
+	elseif game_state == 2 then
+		init_gameover()
+	elseif game_state == 3 then
+		init_victory()
+	else
+		game_state = -1
+	end
+end
+
+function add_score(value)
+	score += value
+	if (score > high) high = score
 end
 
 __gfx__
