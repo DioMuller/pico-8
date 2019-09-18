@@ -143,6 +143,7 @@ function init_game()
 	-- game state
 	kills = 0
 	score = 0
+	lives = 3
 	
 	-- bgm
 	music(5)
@@ -171,7 +172,7 @@ end
 -- update methods
 -------------------
 function update_player()
-	if lives < 0 then
+	if lives <= 0 then
 		change_state(2) -- game over
 	end
 
@@ -221,6 +222,12 @@ function update_enemies()
 				del(bullets,bullet)
 				sfx(1)
 			end
+		end
+		
+		if intersect(enemy.x, enemy.y, 8, 8, player.x, player.y, 8, 8) then
+			sfx(1)
+			lives -= 1
+			del(enemies,enemy)
 		end
 		
 		-- update enemy behavior
@@ -346,12 +353,12 @@ end
 function draw_gameover()
 	map(16,0)
 	
-	print('score:', 32, 70, 15)
-	print(score, 72, 70, 7)
-	print('high : ',  32, 80, 15)
-	print(high, 72, 80, 7)
-	print('kills: ', 32, 90, 15)
-	print(kills, 72, 90, 7)
+	print('score:', 32, 64, 15)
+	print(score, 	72, 64, 7)
+	print('high :', 32, 74, 15)
+	print(high, 	72, 74, 7)
+	print('kills:', 32, 84, 15)
+	print(kills, 	72, 84, 7)
 	
 	if not blinking then 
 		print('press ❎ + 🅾️ to restart',16,108,8)
