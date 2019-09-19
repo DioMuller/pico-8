@@ -4,10 +4,10 @@ __lua__
 -------------------
 -- sfx
 -------------------
--- 0 = shooting
--- 1 = destroy enemy
--- 2 = start game
-
+--  0 = shooting
+--  1 = destroy enemy
+--  2 = start game
+-- 15 = hit
 -------------------
 -- music
 -------------------
@@ -154,7 +154,7 @@ function init_game()
 	for i=1,count_row do
 		previous = nil
 		for j=1,count_col do
-			previous = create_enemy(i*10,20+j*12,j,j*100,previous) 
+			previous = create_enemy(i*10,20+j*12,j,100*(5-j),previous) 
 			previous.active = (j == count_col)
 		end
 	end
@@ -225,7 +225,7 @@ function update_enemies()
 		end
 		
 		if intersect(enemy.x, enemy.y, 8, 8, player.x, player.y, 8, 8) then
-			sfx(1)
+			sfx(15)
 			lives -= 1
 			del(enemies,enemy)
 		end
@@ -237,9 +237,20 @@ function update_enemies()
 			enemy.initialized = (enemy.y >= enemy.target_y)
 		elseif enemy.active then			
 			if enemy.behavior == 1 then
-				
+				if enemy.delay < -10 then
+					enemy.y += enemy.speed_y
+				elseif enemy.delay == 0 then
+					create_enemy_bullet(enemy)
+				else
+					enemy.delay -= 1
+				end
 			elseif enemy.behavior == 2 then
-				
+				if enemy.delay < 0 then
+					create_enemy_bullet(enemy)
+					enemy.delay=rnd(64)+32
+				else
+					enemy.delay -= 1
+				end
 			elseif enemy.behavior == 3 then
 				if enemy.delay < 0 then
 					enemy.y += enemy.speed_y
@@ -269,6 +280,18 @@ function update_bullets()
 		
 		if bullet.y < 0 then
 			del(bullets, bullet)
+		end
+	end
+	
+	for bullet in all(enemy_bullets) do
+		bullet.y += bullet_speed
+		
+		if intersect(player.x,player.y,8,8,bullet.x,bullet.y,8,8) then
+			sfx(15)
+			lives -= 1
+			del(enemy_bullets, bullet)
+		elseif bullet.y > 128 then
+			del(enemy_bullets, bullet)
 		end
 	end
 end
@@ -325,6 +348,10 @@ end
 function draw_bullets()
 	for bullet in all(bullets) do
 		spr(2, bullet.x, bullet.y)
+	end
+	
+	for bullet in all(enemy_bullets) do
+		spr(19, bullet.x, bullet.y)
 	end
 end
 
@@ -385,6 +412,10 @@ end
 -------------------
 function create_bullet()
 	add(bullets, {x = player.x, y = player.y})
+end
+
+function create_enemy_bullet(enemy)
+	add(enemy_bullets, {x = enemy.x, y = enemy.y})
 end
 
 function create_enemy(x,y,behavior,score,previous)
@@ -524,6 +555,7 @@ __sfx__
 0110000010050100501105010050100501105010050110501305015050170500e0500e050100500e0500e050100500e050100501105013050150500e0500e050100500e0500e050100500e050100501105013050
 012000000505005050040500405005050050500205002050040500405002050020500405004050050500505002050020500205002050000000000000000000000000000000000000000000000000000000000000
 01100000180501d0501d050180501f0501f0501a05023050230502405026050280502805028050290502905029050290500000000000000000000000000000000000000000000000000000000000000000000000
+000100000e2500f2500f2500f2501025012250162501c250212501e250172501525015250172501b25021250152501125011250112501325015250172500f2500e2500e2500e2500e250132501c250132500e250
 __music__
 01 03044744
 00 05044744
