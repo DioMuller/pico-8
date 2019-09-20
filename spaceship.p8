@@ -28,7 +28,6 @@ __lua__
 -------------------
 -- data
 -------------------
-
 -- game state
 local game_state = 0
 
@@ -59,11 +58,20 @@ local score = 0
 local high = 5000
 local lives = 3
 local kills = 0
+local wave = 0
 
 -- background
 local stars = {}
 local star_count = 64
 local star_speed = 3
+
+-- enemy waves
+local waves =
+{
+	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+	{enemy_type=3,count=11,creation_pos=function(count) return count*10, -30 end}
+}
 
 -------------------
 -- game lifetime
@@ -84,7 +92,7 @@ function _update()
 		update_background()
 		
 		if #enemies == 0 then
-			change_state(3) -- victory
+			next_wave() -- victory
 		end
 	elseif game_state == 2 then -- game over
 		update_background()
@@ -143,21 +151,14 @@ function init_game()
 	-- game state
 	kills = 0
 	score = 0
+	wave = 0
 	lives = 3
 	
 	-- bgm
 	music(5)
 		
 	-- init enemies
-	enemies = {}
-	
-	for i=1,count_row do
-		previous = nil
-		for j=1,count_col do
-			previous = create_enemy(i*10,20+j*12,j,100*(5-j),previous) 
-			previous.active = (j == count_col)
-		end
-	end
+	next_wave()
 end
 
 function init_gameover()
@@ -172,10 +173,6 @@ end
 -- update methods
 -------------------
 function update_player()
-	if lives <= 0 then
-		change_state(2) -- game over
-	end
-
 	if btn(0) and player.x > 2 then
 		player.x -= player.speed
 	end
@@ -208,7 +205,6 @@ function update_enemies()
 	
 		-- out of screen
 		if enemy.y > 128 then
-			if( enemy.previous != nil ) enemy.previous.active = true
 			del(enemies, enemy)
 		end
 		
@@ -217,7 +213,6 @@ function update_enemies()
 			if intersect(enemy.x,enemy.y,8,8,bullet.x,bullet.y,8,8) then
 				add_score(enemy.score)
 				kills += 1
-				if( enemy.previous != nil ) enemy.previous.active = true
 				del(enemies,enemy)
 				del(bullets,bullet)
 				sfx(1)
@@ -225,41 +220,26 @@ function update_enemies()
 		end
 		
 		if intersect(enemy.x, enemy.y, 8, 8, player.x, player.y, 8, 8) then
+			hit_player()
 			sfx(15)
-			lives -= 1
-			del(enemies,enemy)
 		end
-		
-		-- update enemy behavior
-		if not enemy.initialized then
-			enemy.x += enemy.speed_x
-			enemy.y += enemy.speed_y
-			enemy.initialized = (enemy.y >= enemy.target_y)
-		elseif enemy.active then			
-			if enemy.behavior == 1 then
-				if enemy.delay < -10 then
-					enemy.y += enemy.speed_y
-				elseif enemy.delay == 0 then
-					create_enemy_bullet(enemy)
-				else
-					enemy.delay -= 1
-				end
-			elseif enemy.behavior == 2 then
-				if enemy.delay < 0 then
-					create_enemy_bullet(enemy)
-					enemy.delay=rnd(64)+32
-				else
-					enemy.delay -= 1
-				end
-			elseif enemy.behavior == 3 then
-				if enemy.delay < 0 then
-					enemy.y += enemy.speed_y
-				else
-					enemy.delay -= 1
-				end
+
+		-- move enemy
+		enemy.y += enemy.speed
+
+		-- enemy specific behavior
+		if enemy.behavior == 1 then
+
+		elseif enemy.behavior == 2 then
+			if enemy.delay < 0 then
+				create_enemy_bullet(enemy)
+				enemy.delay=rnd(64)+32
+			else
+				enemy.delay -= 1
 			end
-		end
-		
+		elseif enemy.behavior == 3 then
+
+		end		
 	end
 end
 
@@ -288,8 +268,7 @@ function update_bullets()
 		
 		if intersect(player.x,player.y,8,8,bullet.x,bullet.y,8,8) then
 			sfx(15)
-			lives -= 1
-			del(enemy_bullets, bullet)
+			hit_player()
 		elseif bullet.y > 128 then
 			del(enemy_bullets, bullet)
 		end
@@ -418,13 +397,13 @@ function create_enemy_bullet(enemy)
 	add(enemy_bullets, {x = enemy.x, y = enemy.y})
 end
 
-function create_enemy(x,y,behavior,score,previous)
+function create_enemy(x,y,behavior,score)
 	local diff = 1	
 	
 	if(x>48 and x<78) diff = 0
 	if(x>=78) diff = -1
 	
-	local enemy = {target_x=x, target_y=y, x=x-(15*diff), y=y-30, speed_x=(1*diff), speed_y=2, initialized=false,behavior=behavior,sprite=behavior+15,score=score,previous=previous,delay=rnd(64)+32}
+	local enemy = {x=x,y=y,speed=2,behavior=behavior,sprite=behavior+15,score=score,delay=rnd(64)+32}
 	add(enemies,enemy)
 	
 	return enemy
@@ -461,6 +440,44 @@ function add_score(value)
 	if (score > high) high = score
 end
 
+function hit_player()
+	lives-=1
+	
+	if (lives < 0) then
+		change_state(2)
+	else
+		reset_game()
+	end	
+end
+
+function reset_game()
+	player.x = 64
+	player.y = 118
+	
+	wave -=1
+	
+	music(5)
+	next_wave()
+end
+
+function next_wave()
+	enemies = {}
+	enemy_bullets = {}
+	bullets = {}
+	
+	wave+=1
+	
+	if wave > #waves then
+		change_state(3)
+	else
+		local current_wave = waves[wave]
+		
+		for i=1,current_wave.count do
+			local x,y = current_wave.creation_pos(i)
+			create_enemy(x,y,current_wave.enemy_type,current_wave.enemy_type * 100)
+		end
+	end
+end
 __gfx__
 00000000000990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
