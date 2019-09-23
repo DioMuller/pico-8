@@ -67,11 +67,13 @@ local enemy_types =
 
 local enemy_behaviors =
 {
-	[1]=function(enemy) -- do nothing
-	
+	[1]=function(enemy) -- move down
+		enemy.y += enemy.speed
 	end,	
-	[2]=function(enemy) -- shooter
-		if enemy.delay < 0 then
+	[2]=function(enemy) -- move down and shoot
+		if enemy.y <= 30 then
+			enemy.y += enemy.speed
+		elseif enemy.delay < 0 then
 			create_enemy_bullet(enemy)
 			local enemy_data = enemy_types[enemy.type]
 			enemy.delay=rnd(enemy_data.delay_range)+enemy_data.min_delay
@@ -79,7 +81,8 @@ local enemy_behaviors =
 			enemy.delay -= 1
 		end
 	end,
-	[3]=function(enemy) -- todo
+	[3]=function(enemy) -- unstable down
+		enemy.y += enemy.speed+rnd(2)
 	end
 }
 
@@ -246,8 +249,6 @@ function update_enemies()
 			sfx(15)
 		end
 
-		-- move enemy
-		enemy.y += enemy.speed
 		-- enemy specific behavior
 		enemy_behaviors[enemy.behavior](enemy)
 	end
