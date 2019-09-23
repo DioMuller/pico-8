@@ -50,8 +50,20 @@ local bullet_speed = 4
 
 -- enemies
 local enemies = {}
-local count_col = 3
-local count_row = 11
+
+local waves =
+{
+	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+	{enemy_type=3,count=11,creation_pos=function(count) return count*10, -30 end}
+}
+
+local enemy_types =
+{
+	{id=1,sprite=16,speed=2,behavior=1,score=100,min_delay=32,delay_range=64},
+	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=32},
+	{id=3,sprite=18,speed=2,behavior=3,score=300,min_delay=32,delay_range=16}
+}
 
 -- game state
 local score = 0
@@ -64,14 +76,6 @@ local wave = 0
 local stars = {}
 local star_count = 64
 local star_speed = 3
-
--- enemy waves
-local waves =
-{
-	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=3,count=11,creation_pos=function(count) return count*10, -30 end}
-}
 
 -------------------
 -- game lifetime
@@ -233,7 +237,8 @@ function update_enemies()
 		elseif enemy.behavior == 2 then
 			if enemy.delay < 0 then
 				create_enemy_bullet(enemy)
-				enemy.delay=rnd(64)+32
+				local enemy_data = enemy_types[enemy.type]
+				enemy.delay=rnd(enemy_data.delay_range)+enemy_data.min_delay
 			else
 				enemy.delay -= 1
 			end
@@ -397,16 +402,9 @@ function create_enemy_bullet(enemy)
 	add(enemy_bullets, {x = enemy.x, y = enemy.y})
 end
 
-function create_enemy(x,y,behavior,score)
-	local diff = 1	
-	
-	if(x>48 and x<78) diff = 0
-	if(x>=78) diff = -1
-	
-	local enemy = {x=x,y=y,speed=2,behavior=behavior,sprite=behavior+15,score=score,delay=rnd(64)+32}
-	add(enemies,enemy)
-	
-	return enemy
+function create_enemy(x,y,id)
+	local enemy = enemy_types[id]
+	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay})
 end
 
 -------------------
@@ -474,7 +472,7 @@ function next_wave()
 		
 		for i=1,current_wave.count do
 			local x,y = current_wave.creation_pos(i)
-			create_enemy(x,y,current_wave.enemy_type,current_wave.enemy_type * 100)
+			create_enemy(x,y,current_wave.enemy_type)
 		end
 	end
 end
