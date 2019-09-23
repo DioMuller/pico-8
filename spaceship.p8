@@ -55,14 +55,14 @@ local waves =
 {
 	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
 	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=3,count=11,creation_pos=function(count) return count*10, -30 end}
+	{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end}
 }
 
 local enemy_types =
 {
 	{id=1,sprite=16,speed=2,behavior=1,score=100,min_delay=32,delay_range=64},
-	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=32},
-	{id=3,sprite=18,speed=2,behavior=3,score=300,min_delay=32,delay_range=16}
+	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=64},
+	{id=3,sprite=18,speed=1,behavior=3,score=300,min_delay=64,delay_range=0}
 }
 
 local enemy_behaviors =
@@ -81,8 +81,25 @@ local enemy_behaviors =
 			enemy.delay -= 1
 		end
 	end,
-	[3]=function(enemy) -- unstable down
-		enemy.y += enemy.speed+rnd(2)
+	[3]=function(enemy) -- marching left and right
+		if(enemy.aux==0) enemy.aux=1
+		
+		if enemy.delay > 0 then
+			enemy.delay -= 1
+		else
+			enemy.aux *= -1
+			
+			local enemy_data = enemy_types[enemy.type]
+			enemy.delay=rnd(enemy_data.delay_range)+enemy_data.min_delay
+			
+			if enemy.y > 0 then
+				create_enemy_bullet(enemy)
+			end
+			
+		end
+
+		enemy.y += enemy.speed
+		enemy.x += enemy.aux * enemy.speed
 	end
 }
 
@@ -410,7 +427,7 @@ end
 
 function create_enemy(x,y,id)
 	local enemy = enemy_types[id]
-	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay})
+	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay,aux=0})
 end
 
 -------------------
