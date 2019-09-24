@@ -110,10 +110,8 @@ local lives = 3
 local kills = 0
 local wave = 0
 
--- background
-local stars = {}
-local star_count = 64
-local star_speed = 3
+-- particles
+local particles = {}
 
 -------------------
 -- game lifetime
@@ -123,25 +121,23 @@ function _init()
 end
 
 function _update()
+	update_particles()
+
 	if game_state == 0 then -- title
 		update_title()
 		update_blink()
-		update_background()
 	elseif game_state == 1 then -- game
 		update_player()
 		update_enemies()
 		update_bullets()
-		update_background()
 		
 		if #enemies == 0 then
 			next_wave() -- victory
 		end
 	elseif game_state == 2 then -- game over
-		update_background()
 		update_blink()
 		update_game_end()
 	elseif game_state == 3 then -- victory
-		update_background()
 		update_blink()
 		update_game_end()
 	end
@@ -149,22 +145,20 @@ end
 
 function _draw()
 	cls()
+	
+	draw_particles()
 
 	if game_state == 0 then -- title
-		draw_background()
 		draw_title()
 	elseif game_state == 1 then -- game
-		draw_background()
 		draw_bullets()
 		draw_enemies()
 		draw_player()
 		
 		draw_ui()
 	elseif game_state == 2 then -- game over
-		draw_background()
 		draw_gameover()
 	elseif game_state == 3 then -- victory
-		draw_background()
 		draw_victory()
 	else -- error
 		print('error: invalid game state!', 10, 10, 8)
@@ -178,10 +172,8 @@ function init_title()
 	-- bgm
 	music(0)
 	-- init background
-	stars = {}
-	for i=1,star_count do
-		add(stars, {x=rnd(128),y=rnd(128)})
-	end
+	particles = {}
+	create_stars(64)
 end
 
 function init_game()
@@ -271,13 +263,18 @@ function update_enemies()
 	end
 end
 
-function update_background()
-	for star in all(stars) do
-		star.y += star_speed
+function update_particles()
+	for particle in all(particles) do
+		particle.y += particle.speed
 		
-		if star.y > 128 then
-			star.y = 0
-			star.x = rnd(128)
+		if particle.scroll_y then
+			if (particle.y > 128) particle.y = 0		
+			if (particle.y < 0) particle.y = 128
+		end
+
+		if particle.scroll_x then
+			if (particle.x > 128) particle.x = 0		
+			if (particle.x < 0) particle.x = 128
 		end
 	end
 end
@@ -346,9 +343,9 @@ function draw_enemies()
 	end
 end
 
-function draw_background()
-	for star in all(stars) do
-		pset(star.x, star.y,13)
+function draw_particles()
+	for particle in all(particles) do
+		pset(particle.x, particle.y, particle.color)
 	end
 end
 
@@ -430,11 +427,35 @@ function create_enemy(x,y,id)
 	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay,aux=0})
 end
 
+function create_stars(count)
+	local star_colors = {5,13,6}
+	
+	for i=1,count do
+		local diff = i%#star_colors
+		add(particles, {x=rnd(128),y=rnd(128),speed=diff+1,color=star_colors[diff+1],scroll_x=false,scroll_y=true})
+	end
+end
+
 -------------------
 -- helper methods
 -------------------
 function intersect(x1,y1,w1,h1,x2,y2,w2,h2)
 	return x1<x2+w2 and x2<x1+w1 and y1<y2+h2 and y2<y1+h1
+end
+
+function add_score(value)
+	score += value
+	if (score > high) high = score
+end
+
+function hit_player()
+	lives-=1
+	
+	if (lives < 0) then
+		change_state(2)
+	else
+		reset_game()
+	end	
 end
 
 -------------------
@@ -454,21 +475,6 @@ function change_state(new_state)
 	else
 		game_state = -1
 	end
-end
-
-function add_score(value)
-	score += value
-	if (score > high) high = score
-end
-
-function hit_player()
-	lives-=1
-	
-	if (lives < 0) then
-		change_state(2)
-	else
-		reset_game()
-	end	
 end
 
 function reset_game()
@@ -499,6 +505,7 @@ function next_wave()
 		end
 	end
 end
+
 __gfx__
 00000000000990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
