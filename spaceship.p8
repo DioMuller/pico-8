@@ -105,8 +105,8 @@ local enemy_behaviors =
 
 -- game state
 local score = 0
-local high = 5000
-local lives = 3
+local high = 0
+local lives = 5
 local kills = 0
 local level = 1
 local wave = 0
