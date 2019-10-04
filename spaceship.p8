@@ -51,18 +51,25 @@ local bullet_speed = 4
 -- enemies
 local enemies = {}
 
-local waves =
+local levels =
 {
-	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-	{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-	{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end},
-	{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end}
+	{
+		level = 1,
+		waves =
+		{
+			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end}
+		},
+		background = 1
+	}
 }
 
 local enemy_types =
@@ -140,7 +147,7 @@ local score = 0
 local high = 0
 local lives = 5
 local kills = 0
-local level = 1
+local level = 0
 local wave = 0
 
 -- particles
@@ -225,7 +232,7 @@ function init_game()
 	music(5)
 		
 	-- init enemies
-	next_wave()
+	next_level()
 end
 
 function init_gameover()
@@ -520,6 +527,17 @@ function reset_game()
 	next_wave()
 end
 
+function next_level()
+	level += 1
+	wave = 0
+	
+	if level > #levels then
+		change_state(3)
+	else
+		next_wave()
+	end
+end
+
 function next_wave()
 	enemies = {}
 	enemy_bullets = {}
@@ -527,10 +545,10 @@ function next_wave()
 	
 	wave+=1
 	
-	if wave > #waves then
-		change_state(3)
+	if wave > #levels[level].waves then
+		next_level()
 	else
-		local current_wave = waves[wave]
+		local current_wave = levels[level].waves[wave]
 		
 		for i=1,current_wave.count do
 			local x,y = current_wave.creation_pos(i)
