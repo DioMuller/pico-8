@@ -57,16 +57,15 @@ local levels =
 		level = 1,
 		waves =
 		{
-			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
-			{enemy_type=1,count=11,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
-			{enemy_type=2,count=11,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=1,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=2,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=1,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
 			{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end},
-			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end}
+			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=2,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=5,count=1,creation_pos=function(count) return 4, -30 end}
 		},
 		background = 0
 	}
@@ -74,10 +73,24 @@ local levels =
 
 local enemy_types =
 {
-	{id=1,sprite=16,speed=2,behavior=1,score=100,min_delay=32,delay_range=64,hp=1}, -- rusher
-	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=64,hp=1}, -- sniper
-	{id=3,sprite=18,speed=1,behavior=3,score=300,min_delay=64,delay_range=0,hp=1},   -- dancer
-	{id=4,sprite=19,speed=2,behavior=4,score=1000,min_delay=16,delay_range=0,hp=5} -- great dancer
+	-- enemy armada enemies
+	{id=1,sprite=16,speed=2,behavior=1,score=100,min_delay=32,delay_range=64,hp=1, size_x=1, size_y=1}, -- runner
+	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=64,hp=1, size_x=1, size_y=1}, -- sniper
+	{id=3,sprite=18,speed=1,behavior=3,score=300,min_delay=64,delay_range=0,hp=1, size_x=1, size_y=1},   -- dancer
+	{id=4,sprite=19,speed=2,behavior=4,score=1000,min_delay=16,delay_range=0,hp=3, size_x=1, size_y=1}, -- great dancer
+	{id=5,sprite=8,speed=1,behavior=4,score=10000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- the flying fortress
+	-- uranian blorps enemies
+	{id=6,sprite=20,speed=3,behavior=2,score=500,min_delay=32,delay_range=32,hp=2, size_x=1, size_y=1}, -- katarro
+	{id=7,sprite=21,speed=3,behavior=3,score=600,min_delay=32,delay_range=64,hp=2, size_x=1, size_y=1}, -- kuspo
+	{id=8,sprite=22,speed=3,behavior=4,score=700,min_delay=64,delay_range=0,hp=2, size_x=1, size_y=1},   -- boomba
+	{id=9,sprite=23,speed=5,behavior=1,score=2000,min_delay=16,delay_range=0,hp=5, size_x=1, size_y=1}, -- korre
+	{id=10,sprite=10,speed=1,behavior=4,score=20000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- the mother
+	-- space pirate enemies
+	{id=11,sprite=32,speed=3,behavior=1,score=700,min_delay=32,delay_range=32,hp=2, size_x=1, size_y=1}, -- rusher
+	{id=12,sprite=33,speed=3,behavior=2,score=800,min_delay=32,delay_range=64,hp=1, size_x=1, size_y=1}, -- shooter
+	{id=13,sprite=34,speed=3,behavior=3,score=900,min_delay=64,delay_range=0,hp=1, size_x=1, size_y=1},   -- berzerker
+	{id=14,sprite=35,speed=5,behavior=4,score=3000,min_delay=16,delay_range=0,hp=3, size_x=1, size_y=1}, -- ballerino
+	{id=15,sprite=40,speed=3,behavior=4,score=30000,min_delay=8,delay_range=16,hp=15, size_x=2, size_y=2} -- the corsair
 }
 
 local enemy_behaviors =
@@ -387,7 +400,7 @@ end
 
 function draw_enemies()
 	for enemy in all(enemies) do
-		spr(enemy.sprite,enemy.x,enemy.y)
+		spr(enemy.sprite,enemy.x,enemy.y, enemy.size_x, enemy.size_y)
 	end
 end
 
@@ -467,7 +480,7 @@ end
 
 function create_enemy(x,y,id)
 	local enemy = enemy_types[id]
-	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay,hp=enemy.hp,aux=0})
+	add(enemies,{x=x,y=y,type=id,speed=enemy.speed,behavior=enemy.behavior,sprite=enemy.sprite,score=enemy.score,delay=rnd(enemy.delay_range)+enemy.min_delay,hp=enemy.hp,size_x=enemy.size_x, size_y=enemy.size_y,aux=0})
 end
 
 function create_stars(count)
