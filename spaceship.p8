@@ -68,7 +68,7 @@ local levels =
 			{enemy_type=3,count=5,creation_pos=function(count) return count*10, -30 end},
 			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end}
 		},
-		background = 1
+		background = 0
 	}
 }
 
@@ -77,7 +77,7 @@ local enemy_types =
 	{id=1,sprite=16,speed=2,behavior=1,score=100,min_delay=32,delay_range=64,hp=1}, -- rusher
 	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=64,hp=1}, -- sniper
 	{id=3,sprite=18,speed=1,behavior=3,score=300,min_delay=64,delay_range=0,hp=1},   -- dancer
-	{id=4,sprite=19,speed=2,behavior=4,score=1000,min_delay=16,delay_range=0,hp=5} -- boss: dancer leader
+	{id=4,sprite=19,speed=2,behavior=4,score=1000,min_delay=16,delay_range=0,hp=5} -- great dancer
 }
 
 local enemy_behaviors =
@@ -150,6 +150,9 @@ local kills = 0
 local level = 0
 local wave = 0
 
+-- current level state
+local background = 0
+
 -- particles
 local particles = {}
 
@@ -184,7 +187,7 @@ function _update()
 end
 
 function _draw()
-	cls()
+	cls(background)
 	
 	draw_particles()
 
@@ -503,6 +506,7 @@ end
 -------------------
 function change_state(new_state)
 	game_state = new_state
+	background = 0
 
 	if game_state == 0 then
 		init_title()
@@ -534,6 +538,7 @@ function next_level()
 	if level > #levels then
 		change_state(3)
 	else
+		background = levels[level].background
 		next_wave()
 	end
 end
