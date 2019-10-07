@@ -39,7 +39,6 @@ local player = {
 }
 
 -- aux
-local shooting = false
 local blinking = false
 local blink_count = 0
 
@@ -239,6 +238,7 @@ function init_game()
 	player.speed = 2
 	
 	-- game state
+	level = 0
 	kills = 0
 	score = 0
 	wave = 0
@@ -279,14 +279,10 @@ function update_player()
 		player.y += player.speed
 	end		
 	
-	if btn(4) then
-		if not shooting then
-			sfx(0)
-			create_bullet()
-			shooting = true
-		end
-	else
-		shooting = false
+	if btnp(4) then
+		sfx(0)
+		create_bullet()
+		shooting = true
 	end
 end
 
@@ -362,24 +358,16 @@ function update_bullets()
 end
 
 function update_title()
-	if btn(4) and btn(5) then
-		if not shooting then
-			sfx(2)
-			change_state(1)
-		end
-	else
-		shooting = false
+	if btnp(4) or btnp(5) then
+		sfx(2)
+		change_state(1)
 	end
 end
 
 function update_game_end()
-	if btn(4) and btn(5) then
-		if not shooting then
-			sfx(2)
-			change_state(0)
-		end
-	else
-		shooting = false
+	if btnp(4) or btnp(5) then
+		sfx(2)
+		change_state(0)
 	end
 end
 
@@ -436,7 +424,7 @@ end
 function draw_title()
 	map(0,0)
 	if not blinking then 
-		print('press ❎ + 🅾️ to start',20,80,8)
+		print('press ❎ or 🅾️ to start',18,80,8)
 	end
 
 	print('2019 diogo muller',28,120,6)
@@ -463,7 +451,7 @@ function draw_scores()
 	print(kills, 	72, 84, 7)
 	
 	if not blinking then 
-		print('press ❎ + 🅾️ to restart',16,108,8)
+		print('press ❎ or 🅾️ to restart',14,108,8)
 	end
 end
 
