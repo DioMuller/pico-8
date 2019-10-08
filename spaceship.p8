@@ -35,7 +35,8 @@ local game_state = 0
 local player = {
 	x = 0,
 	y = 0,
-	speed = 0
+	speed = 0,
+	invulnerability = 10
 }
 
 -- aux
@@ -263,6 +264,8 @@ end
 -- update methods
 -------------------
 function update_player()
+	if (player.invulnerability > 0) player.invulnerability -= 1
+
 	if btn(0) and player.x > 2 then
 		player.x -= player.speed
 	end
@@ -383,7 +386,7 @@ end
 -- draw methods
 -------------------
 function draw_player()
-	spr(1, player.x, player.y)
+	if (player.invulnerability % 2 == 0) spr(1, player.x, player.y)
 end
 
 function draw_enemies()
@@ -493,13 +496,15 @@ function add_score(value)
 end
 
 function hit_player()
-	lives-=1
-	
-	if (lives < 0) then
-		change_state(2)
-	else
-		reset_game()
-	end	
+	if player.invulnerability == 0 then
+		lives-=1
+		
+		if (lives < 0) then
+			change_state(2)
+		else
+			player.invulnerability = 60
+		end	
+	end
 end
 
 -------------------
@@ -520,16 +525,6 @@ function change_state(new_state)
 	else
 		game_state = -1
 	end
-end
-
-function reset_game()
-	player.x = 64
-	player.y = 118
-	
-	wave -=1
-	
-	music(5)
-	next_wave()
 end
 
 function next_level()
