@@ -55,6 +55,7 @@ local levels =
 {
 	{
 		level = 1,
+		bgm = 5,
 		waves =
 		{
 			{enemy_type=1,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
@@ -244,10 +245,7 @@ function init_game()
 	score = 0
 	wave = 0
 	lives = 3
-	
-	-- bgm
-	music(5)
-		
+			
 	-- init enemies
 	next_level()
 end
@@ -417,8 +415,8 @@ function draw_ui()
 	print('score: '..score, 3, 3, 6)
 	print('high : '..high, 3, 10, 6)
 	
-	print('lives: '..lives, 86, 3, 6)
-	print('kills: '..kills, 86,10, 6)
+	print('health: '..lives, 82, 3, 6)
+	print('kills : '..kills, 82,10, 6)
 	
 	-- border
 	rect(0,16,127,127,1)
@@ -534,7 +532,13 @@ function next_level()
 	if level > #levels then
 		change_state(3)
 	else
+		-- bgm
+		music(levels[level].bgm)
+		
+		-- background
 		background = levels[level].background
+		
+		-- re-start waves
 		next_wave()
 	end
 end
