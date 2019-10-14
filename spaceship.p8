@@ -18,6 +18,7 @@ __lua__
 -- 8 = game over
 -- 9 = victory
 -- 10 = level 2
+-- 13 = level 3
 
 -------------------
 -- game state
@@ -58,7 +59,7 @@ local levels =
 {
 	{
 		level = 1,
-		bgm = 5,
+		bgm = 13,
 		waves =
 		{
 			{enemy_type=1,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
@@ -71,7 +72,10 @@ local levels =
 			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end},
 			{enemy_type=5,count=1,creation_pos=function(count) return 4, -30 end}
 		},
-		background = 0
+		background = 0,
+		init=function()
+			create_stars(128)
+		end
 	}
 }
 
@@ -537,7 +541,10 @@ function next_level()
 	else
 		-- bgm
 		music(levels[level].bgm)
-		sfx(16)
+		
+		-- particles
+		particles = {}
+		levels[level].init()
 				
 		-- background
 		background = levels[level].background
