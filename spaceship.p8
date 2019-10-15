@@ -14,10 +14,10 @@ __lua__
 -- music
 -------------------
 -- 0 = title
--- 5 = level 1
+-- 5 = level 2
 -- 8 = game over
 -- 9 = victory
--- 10 = level 2
+-- 10 = level 1
 -- 13 = level 3
 
 -------------------
@@ -72,11 +72,51 @@ local levels =
 			{enemy_type=4,count=1,creation_pos=function(count) return 4, -30 end},
 			{enemy_type=5,count=1,creation_pos=function(count) return 4, -30 end}
 		},
+		background = 3,
+		init=function()
+			-- nothing else to do
+		end
+	},
+	{
+		level = 2,
+		bgm = 5,
+		waves =
+		{
+			{enemy_type=11,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=12,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=11,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=13,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=14,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=13,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=12,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=14,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=15,count=1,creation_pos=function(count) return 4, -30 end}
+		},
 		background = 0,
 		init=function()
 			create_stars(128)
 		end
-	}
+	},
+	{
+		level = 3,
+		bgm = 13,
+		waves =
+		{
+			{enemy_type=6,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=7,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=6,count=6,creation_pos=function(count) return count*10, (6-count)*(6-count) - 30 end},
+			{enemy_type=8,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=9,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=8,count=5,creation_pos=function(count) return count*10, -30 end},
+			{enemy_type=7,count=6,creation_pos=function(count) return count*10, -(6-count)*(6-count) - 30 end},
+			{enemy_type=8,count=1,creation_pos=function(count) return 4, -30 end},
+			{enemy_type=10,count=1,creation_pos=function(count) return 4, -30 end}
+		},
+		background = 0,
+		init=function()
+			create_stars(128)
+		end
+	},
 }
 
 local enemy_types =
@@ -86,19 +126,19 @@ local enemy_types =
 	{id=2,sprite=17,speed=2,behavior=2,score=200,min_delay=32,delay_range=64,hp=1, size_x=1, size_y=1}, -- sniper
 	{id=3,sprite=18,speed=1,behavior=3,score=300,min_delay=64,delay_range=0,hp=1, size_x=1, size_y=1},   -- dancer
 	{id=4,sprite=19,speed=2,behavior=4,score=1000,min_delay=16,delay_range=0,hp=3, size_x=1, size_y=1}, -- great dancer
-	{id=5,sprite=8,speed=1,behavior=4,score=10000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- the flying fortress
-	-- uranian blorps enemies
-	{id=6,sprite=20,speed=3,behavior=2,score=500,min_delay=32,delay_range=32,hp=2, size_x=1, size_y=1}, -- katarro
-	{id=7,sprite=21,speed=3,behavior=3,score=600,min_delay=32,delay_range=64,hp=2, size_x=1, size_y=1}, -- kuspo
-	{id=8,sprite=22,speed=3,behavior=4,score=700,min_delay=64,delay_range=0,hp=2, size_x=1, size_y=1},   -- boomba
-	{id=9,sprite=23,speed=5,behavior=1,score=2000,min_delay=16,delay_range=0,hp=5, size_x=1, size_y=1}, -- korre
-	{id=10,sprite=10,speed=1,behavior=4,score=20000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- the mother
+	{id=5,sprite=8,speed=1,behavior=4,score=10000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- boss: the flying fortress
+	-- empire enemies
+	{id=6,sprite=36,speed=3,behavior=2,score=500,min_delay=32,delay_range=32,hp=2, size_x=1, size_y=1}, -- attacker
+	{id=7,sprite=37,speed=3,behavior=3,score=600,min_delay=32,delay_range=64,hp=2, size_x=1, size_y=1}, -- survey drone
+	{id=8,sprite=38,speed=3,behavior=4,score=700,min_delay=64,delay_range=0,hp=2, size_x=1, size_y=1},   -- rushing bot
+	{id=9,sprite=39,speed=5,behavior=1,score=2000,min_delay=16,delay_range=0,hp=5, size_x=1, size_y=1}, -- obliterator
+	{id=10,sprite=42,speed=1,behavior=4,score=20000,min_delay=8,delay_range=0,hp=10, size_x=2, size_y=2}, -- boss: annihilation station
 	-- space pirate enemies
 	{id=11,sprite=32,speed=3,behavior=1,score=700,min_delay=32,delay_range=32,hp=2, size_x=1, size_y=1}, -- rusher
 	{id=12,sprite=33,speed=3,behavior=2,score=800,min_delay=32,delay_range=64,hp=1, size_x=1, size_y=1}, -- shooter
 	{id=13,sprite=34,speed=3,behavior=3,score=900,min_delay=64,delay_range=0,hp=1, size_x=1, size_y=1},   -- berzerker
 	{id=14,sprite=35,speed=5,behavior=4,score=3000,min_delay=16,delay_range=0,hp=3, size_x=1, size_y=1}, -- ballerino
-	{id=15,sprite=40,speed=3,behavior=4,score=30000,min_delay=8,delay_range=16,hp=15, size_x=2, size_y=2} -- the corsair
+	{id=15,sprite=40,speed=3,behavior=4,score=30000,min_delay=8,delay_range=16,hp=15, size_x=2, size_y=2} -- boss: the corsair
 }
 
 local enemy_behaviors =
