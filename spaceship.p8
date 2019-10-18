@@ -270,7 +270,7 @@ function _draw()
 end
 
 -------------------
--- init methods
+-- init functions
 -------------------
 function init_title()
 	-- bgm
@@ -306,7 +306,7 @@ function init_victory()
 end
 
 -------------------
--- update methods
+-- update functions
 -------------------
 function update_player()
 	if (player.invulnerability > 0) player.invulnerability -= 1
@@ -428,7 +428,7 @@ function update_blink()
 	end
 end
 -------------------
--- draw methods
+-- draw functions
 -------------------
 function draw_player()
 	if (player.invulnerability % 2 == 0) spr(1, player.x, player.y)
@@ -504,7 +504,7 @@ function draw_scores()
 end
 
 -------------------
--- builder methods
+-- builder functions
 -------------------
 function create_bullet()
 	add(bullets, {x = player.x, y = player.y})
@@ -529,7 +529,7 @@ function create_stars(count)
 end
 
 -------------------
--- helper methods
+-- helper functions
 -------------------
 function intersect(x1,y1,w1,h1,x2,y2,w2,h2)
 	return x1<x2+w2 and x2<x1+w1 and y1<y2+h2 and y2<y1+h1
@@ -553,7 +553,7 @@ function hit_player()
 end
 
 -------------------
--- state methods
+-- state functions
 -------------------
 function change_state(new_state)
 	game_state = new_state
